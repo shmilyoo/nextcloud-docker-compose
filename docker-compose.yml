@@ -1,0 +1,56 @@
+version: '3'
+
+services:
+  db:
+    image: mariadb
+    restart: always
+    command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW
+    container_name: nextcloud-db
+    restart: unless-stopped
+    volumes:
+      - ./db:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=数据库root密码
+      - MYSQL_PASSWORD=数据库密码
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+    networks:
+      - docker-service
+
+  app:
+    build: ./app
+    restart: always
+    container_name: nextcloud-app
+    restart: unless-stopped
+    depends_on:
+      - db
+    volumes:
+      - ./app/data:/var/www/html
+      # - 可以把自己的一些文件目录挂载进去，我就直接挂载了 /mnt 下面的
+    environment:
+      - MYSQL_PASSWORD=数据库密码
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+      - MYSQL_HOST=db
+    networks:
+      - docker-service
+
+  nginx:
+    image: nginx:alpine
+    restart: always
+    container_name: nextcloud-nginx
+    restart: unless-stopped
+    depends_on:
+      - app
+    ports:
+      # 自己定义开放端口，需要https 可以自己配一下
+      - 19000:80
+    volumes:
+      - ./app/data:/var/www/html
+      - ./nginx:/etc/nginx/conf.d
+    networks:
+      - docker-service
+
+networks:
+    docker-service:
+        external: true
