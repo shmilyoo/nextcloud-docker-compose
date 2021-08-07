@@ -25,6 +25,8 @@ docker exec nextcloud su www-data -s /bin/bash -c "php /var/www/html/occ files:s
 nextcloud 默认不支持视频类型预览，为了预防一些风险 https://docs.nextcloud.com/server/12/admin_manual/configuration_server/config_sample_php_parameters.html#previews
 
 config.php 中没有预览的配置，是按照默认来的，可以手动修改 加进去
+
+```
 'enable_previews' => true,
 'enabledPreviewProviders' =>
 array (
@@ -39,10 +41,14 @@ array (
 'OC\Preview\TXT',
 'OC\Preview\MarkDown',
 ),
+```
+
 另外，需要额外安装 ffmpeg，直接把 image 做一个 Dockerfile 就可以了
 
+```
 From nextcloud:fpm
 
 COPY ./sources.list /etc/apt/
 
 RUN apt update && apt install ffmpeg -y
+```
